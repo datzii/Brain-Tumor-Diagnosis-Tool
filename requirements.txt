@@ -1,0 +1,11 @@
+h5py
+imutils
+keras
+matplotlib
+numpy
+opencv_python
+Pillow
+scikit_learn
+seaborn
+tensorflow
+tqdm
