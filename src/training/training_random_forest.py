@@ -43,7 +43,7 @@ y_train = np.array(y_train)
 y_test = np.array(y_test)
 
 # Initialize Random Forest
-rf_cpu = RandomForestClassifier()
+rf_cpu = RandomForestClassifier(max_depth=30, random_state=42, n_estimators=200)
 
 # Hyperparameter Grid for Tuning
 #Best Hyperparameters: {'max_depth': 30, 'min_samples_leaf': 2, 'min_samples_split': 5, 'n_estimators': 200}
@@ -56,17 +56,17 @@ param_grid = {
 
 # Fit the data to the different models
 grid_search = GridSearchCV(estimator=rf_cpu, param_grid=param_grid, cv=3, n_jobs=1, verbose=2)
-grid_search.fit(x_train, y_train)
+rf_cpu.fit(x_train, y_train)
 
 # Get Best Model
-best_rf_cpu = grid_search.best_estimator_
+#best_rf_cpu = grid_search.best_estimator_
 
 # Prediction on Test Data
-y_pred_cpu = best_rf_cpu.predict(x_test)
+y_pred_cpu = rf_cpu.predict(x_test)
 
 # Evaluate Model with Test Data
 conf_matrix = confusion_matrix(y_test, y_pred_cpu)
-print("\nBest Hyperparameters:", grid_search.best_params_)
+#print("\nBest Hyperparameters:", grid_search.best_params_)
 print("\nConfusion Matrix:\n", conf_matrix)
 print("\nClassification Report:\n", classification_report(y_test, y_pred_cpu))
 
@@ -80,5 +80,5 @@ plt.savefig('rf_cpu_confusion_matrix.png')
 plt.close()
 
 # Save the Best Model
-dump(best_rf_cpu, 'best_rf_cpu_model.joblib')
+dump(rf_cpu, 'rf_model.joblib')
 print("Best CPU-accelerated model saved as best_rf_cpu_model.joblib")
