@@ -9,7 +9,7 @@ import tensorflow as tf
 import os
 
 # Specify the path to the saved model
-model_path = 'model-07-0.98-0.09.h5'
+model_path = '../../models/NN_custom/best_custom_model.h5'
 
 # Load the trained model
 model = load_model(model_path)
@@ -29,16 +29,8 @@ y_test = []   # Testing labels
 
 # Your image loading and processing code
 for label in labels:
-    trainPath = os.path.join('../cleaned/Training', label)
-    for file in tqdm(os.listdir(trainPath)):
-        image = cv2.imread(os.path.join(trainPath, file), 0)  # Load images in grayscale
-        image = cv2.bilateralFilter(image, 2, 50, 50)  # Remove image noise
-        image = cv2.applyColorMap(image, cv2.COLORMAP_BONE)  # Apply COLORMAP_BONE (pseudocolor)
-        image = cv2.resize(image, (image_size, image_size))  # Resize to 150x150
-        x_train.append(image)
-        y_train.append(labels.index(label))
 
-    testPath = os.path.join('../cleaned/Testing', label)
+    testPath = os.path.join('../../../cleaned/Testing', label)
     for file in tqdm(os.listdir(testPath)):
         image = cv2.imread(os.path.join(testPath, file), 0)
         image = cv2.bilateralFilter(image, 2, 50, 50)
@@ -48,7 +40,6 @@ for label in labels:
         y_test.append(labels.index(label))
 
 # Normalize image data
-x_train = np.array(x_train) / 255.0
 x_test = np.array(x_test) / 255.0
 
 # If y_test is not one-hot encoded, convert it to one-hot encoding
