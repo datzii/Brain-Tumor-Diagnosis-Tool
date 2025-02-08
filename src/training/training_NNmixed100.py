@@ -1,7 +1,10 @@
 from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau, ModelCheckpoint, TensorBoard, LambdaCallback
 from tensorflow.keras.layers import Input, Dropout, Dense, GlobalAveragePooling2D
+
+from tensorflow.keras.layers import (Conv2D, MaxPooling2D, Flatten, Dense, Dropout, BatchNormalization, 
+                                     GlobalAveragePooling2D, Input, Add, Activation, Multiply, Reshape)
 from tensorflow.keras.models import Sequential, Model
-from tensorflow.keras.applications import ResNet50
+from tensorflow.keras.applications import ResNet101
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix
@@ -76,25 +79,68 @@ datagen = ImageDataGenerator(
 )
 datagen.fit(x_train)
 
-# Define the ResNet50 model
-net = ResNet50(weights='imagenet', include_top=False, input_shape=(image_size, image_size, 3))
+# === Squeeze-and-Excitation Block ===
+def squeeze_excite_block(input_tensor, ratio=16):
+    """ Squeeze-and-Excitation Block """
+    filters = input_tensor.shape[-1]
+    se = GlobalAveragePooling2D()(input_tensor)
+    se = Dense(filters // ratio, activation='relu')(se)
+    se = Dense(filters, activation='sigmoid')(se)
+    se = Reshape((1, 1, filters))(se)
+    return Multiply()([input_tensor, se])
 
-model = net.output
-model = GlobalAveragePooling2D()(model)
-model = Dropout(0.4)(model)
-model = Dense(4, activation="softmax")(model)
-model = Model(inputs=net.input, outputs=model)
+# === Residual Block ===
+def residual_block(x, filters, downsample=False):
+    """ Residual Block with optional downsampling """
+    shortcut = x
+    if downsample:
+        shortcut = Conv2D(filters, (1, 1), padding='same', strides=2)(shortcut)
 
-# Compile the model
-adam = keras.optimizers.Adam(learning_rate=0.0001)
+    x = Conv2D(filters, (3, 3), activation='relu', padding='same', strides=(2 if downsample else 1))(x)
+    x = BatchNormalization()(x)
+    x = Conv2D(filters, (3, 3), activation=None, padding='same')(x)  # No activation yet
+    x = BatchNormalization()(x)
+    x = Add()([x, shortcut])  # Residual Connection
+    x = tf.keras.activations.relu(x)  # Apply activation after addition
+    x = squeeze_excite_block(x)  # SE Block
+    return x
+
+# === Load Pretrained ResNet50 ===
+resnet = ResNet101(weights='imagenet', include_top=False, input_shape=(150, 150, 3))
+#resnet.trainable = False  # Freeze ResNet50 layers
+
+# === Keep the spatial dimensions for Residual Blocks ===
+x = resnet.output  # (Batch, 5, 5, 2048) from ResNet50
+
+# === Add Custom Residual + SE Blocks ===
+x = residual_block(x, 128, downsample=True)
+x = Dropout(0.3)(x)
+x = residual_block(x, 256, downsample=True)
+x = Dropout(0.4)(x)
+x = residual_block(x, 512, downsample=True)
+x = Dropout(0.5)(x)
+
+# === Now Apply Global Pooling ===
+x = GlobalAveragePooling2D()(x)
+
+# === Fully Connected Layers ===
+x = Dense(1024, activation='relu')(x)
+x = Dropout(0.5)(x)
+x = Dense(512, activation='relu')(x)
+x = Dropout(0.5)(x)
+
+# === Output Layer ===
+outputs = Dense(4, activation='softmax')(x)
+
+# === Define Final Model ===
+model = Model(inputs=resnet.input, outputs=outputs)
+
+# === Compile Model ===
+adam = tf.keras.optimizers.Adam(learning_rate=0.0001)
 model.compile(optimizer=adam, loss='categorical_crossentropy', metrics=['accuracy'])
+
+# === Model Summary ===
 model.summary()
-
-# Define TensorBoard callback
-tensorboard_callback = TensorBoard(log_dir=logdir, histogram_freq=1)
-
-# Create a writer variable for writing into the log folder (for confusion matrix)
-file_writer_cm = tf.summary.create_file_writer(logdir)
 
 class_names = list(labels)
 
@@ -105,11 +151,11 @@ EPOCHS = 50
 Checkpoint = ModelCheckpoint(filepath='model-{epoch:02d}-{val_accuracy:.2f}-{val_loss:.2f}.h5', 
                               monitor='val_loss', verbose=1, save_best_only=True, mode='min')
 
-ES = EarlyStopping(monitor='val_loss', min_delta=0.001, patience=5, mode='min', restore_best_weights=True, verbose=1)
+ES = EarlyStopping(monitor='val_loss', min_delta=0.001, patience=10, mode='min', restore_best_weights=True, verbose=1)
 
-RL = ReduceLROnPlateau(monitor='val_loss', factor=0.3, patience=5, verbose=1, mode='min')
+RL = ReduceLROnPlateau(monitor='val_loss', factor=0.3, patience=10, verbose=1, mode='min')
 
-callbacks = [ES, RL, tensorboard_callback, Checkpoint]
+callbacks = [ES, RL, Checkpoint]
 
 # Train the model and save logs for TensorBoard
 history = model.fit(datagen.flow(x_train, y_train, batch_size=20), 
