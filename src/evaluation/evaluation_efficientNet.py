@@ -9,7 +9,7 @@ import tensorflow as tf
 import os
 
 # Specify the path to the saved model
-model_path = '../../models/resNet/model-14-0.99-0.05.h5'
+model_path = '../../models/efficientNet/model-06-0.95-0.17.h5'
 
 # Load the trained model
 model = load_model(model_path)
@@ -40,7 +40,6 @@ for label in labels:
 
 # Normalize image data
 x_test = np.array(x_test) / 255.0
-print(x_test.shape)
 
 # If y_test is not one-hot encoded, convert it to one-hot encoding
 y_test = tf.keras.utils.to_categorical(y_test, num_classes=4)

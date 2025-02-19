@@ -102,7 +102,7 @@ class_names = list(labels)
 BATCH_SIZE = 64
 EPOCHS = 50
 
-Checkpoint = ModelCheckpoint(filepath='model-{epoch:02d}-{val_accuracy:.2f}-{val_loss:.2f}.h5', 
+Checkpoint = ModelCheckpoint(filepath='resNet50-{epoch:02d}-{val_accuracy:.2f}-{val_loss:.2f}.h5', 
                               monitor='val_loss', verbose=1, save_best_only=True, mode='min')
 
 ES = EarlyStopping(monitor='val_loss', min_delta=0.001, patience=5, mode='min', restore_best_weights=True, verbose=1)

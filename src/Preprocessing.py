@@ -34,15 +34,15 @@ def crop_img(img):
 	
 	return new_img
 	
-if __name__ == "__main__":
-	training = "../archive/Training"
-	testing = "../archive/Testing"
+def save_cropped_images(from_path: str, to_path: str):
+	training = from_path + "/Training"
+	testing = from_path + "/Testing"
 	training_dir = os.listdir(training)
 	testing_dir = os.listdir(testing)
 	IMG_SIZE = 256
 
 	for dir in training_dir:
-		save_path = '../cropped/Training/'+ dir
+		save_path = to_path + '/Training/'+ dir
 		path = os.path.join(training,dir)
 		image_dir = os.listdir(path)
 		for img in image_dir:
@@ -54,7 +54,7 @@ if __name__ == "__main__":
 			cv2.imwrite(save_path+'/'+img, new_img)
 	
 	for dir in testing_dir:
-		save_path = '../cropped/Testing/'+ dir
+		save_path = to_path + '/Testing/'+ dir
 		path = os.path.join(testing,dir)
 		image_dir = os.listdir(path)
 		for img in image_dir:

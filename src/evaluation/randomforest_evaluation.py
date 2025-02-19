@@ -10,7 +10,7 @@ from tqdm import tqdm
 from joblib import dump, load
 # Load the saved model
 
-model = load("../../models/Random_Forest/best_rf_cpu_model86tambe.joblib")  # Replace with your file name
+model = load("../../models/Random_Forest/rf_model.joblib")  # Replace with your file name
 
 
 # Load the labels and initialize variables

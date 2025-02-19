@@ -1,5 +1,5 @@
 from tensorflow.keras.models import load_model
-from sklearn.metrics import confusion_matrix, classification_report
+from sklearn.metrics import confusion_matrix, classification_report, accuracy_score
 import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
@@ -15,7 +15,7 @@ model_path = '../../models/NN_custom/best_custom_model.h5'
 model = load_model(model_path)
 
 # Print model summary to check if it's loaded properly
-model.summary()
+#model.summary()
 
 # Load the labels and initialize other variables
 labels = ['glioma', 'meningioma', 'notumor', 'pituitary']
@@ -47,6 +47,8 @@ y_test = tf.keras.utils.to_categorical(y_test, num_classes=4)
 
 # Predictions and evaluation
 predicted_classes = np.argmax(model.predict(x_test), axis=1)  # Get predicted classes
+accuracy = accuracy_score(np.argmax(y_test, axis=1), predicted_classes)
+print(f"Model Accuracy: {accuracy:.2%}")
 confusionmatrix = confusion_matrix(np.argmax(y_test, axis=1), predicted_classes)  # Compare to true labels
 
 # Save confusion matrix image
