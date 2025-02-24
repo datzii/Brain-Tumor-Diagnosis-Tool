@@ -1,10 +1,16 @@
-from tensorflow.keras.models import load_model
-from sklearn.metrics import confusion_matrix, classification_report, accuracy_score
-import numpy as np
 import cv2
-
+import json
+import numpy as np
 from services.Preprocessing import crop_img
 
+
+
+def start_brain_tumor_classifier(data, model):
+    file_path = data.get('file_path')
+    response = classify_brain_tumor_from_MRI(file_path, model)
+    return {
+        "response": response
+    }
 
 
 def classify_brain_tumor_from_MRI(file_path: str, model) -> str:    
@@ -15,14 +21,14 @@ def classify_brain_tumor_from_MRI(file_path: str, model) -> str:
 
     image_size = 150  # Model's expected input size
 
-    image = cv2.imread(file_path, 0)  # Read in grayscale
+    image = cv2.imread(file_path)  
     image = crop_img(image)
-    cv2.imwrite('/mnt/c/Users/Usuario/Desktop/MASTER/TFM/cleaned/Testing'+'/'+'prova.jpg', image)
-    image = cv2.bilateralFilter(image, 2, 50, 50)  # Apply bilateral filtering
-    image = cv2.applyColorMap(image, cv2.COLORMAP_BONE)  # Apply color mapping
-    image = cv2.resize(image, (image_size, image_size))  # Resize to match model input
-    image = image / 255.0  # Normalize
-    image = np.expand_dims(image, axis=0)  # Add batch dimension
+    #cv2.imwrite('/mnt/c/Users/Usuario/Desktop/MASTER/TFM/cleaned/Testing'+'/'+'prova.jpg', image)
+    image = cv2.bilateralFilter(image, 2, 50, 50)  
+    image = cv2.applyColorMap(image, cv2.COLORMAP_BONE) 
+    image = cv2.resize(image, (image_size, image_size))  
+    image = image / 255.0 
+    image = np.expand_dims(image, axis=0) 
 
     # Predict the class
     prediction = model.predict(image)
