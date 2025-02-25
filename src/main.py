@@ -31,11 +31,12 @@ def status():
     ), 200
 
 
-@app.route("/v1/evaluator/", methods = ['GET', 'POST', 'PUT','DELETE', 'OPTIONS'])
+@app.route("/diagnosis_tool/get_prediction", methods = ['GET', 'POST', 'PUT','DELETE', 'OPTIONS'])
 @cross_origin()
 def api():
-    data = request.json    
-    answer_evaluator = start_brain_tumor_classifier(data, diagnosis_model)
+    data = request.json
+    print(data)   
+    answer_evaluator = start_brain_tumor_classifier(data, diagnosis_models)
     return answer_evaluator
 
 
@@ -45,19 +46,24 @@ def after_request(response):
     response.headers.add('Access-Control-Allow-Methods', "GET, POST, PUT, DELETE, OPTIONS")
     return response
 
-def initialize_model():
-    model_path = '../models/resNet/model-14-0.99-0.05.h5'
-    model = load_model(model_path)
-    print('model loaded')
-    return model
+global models
+models = []
 
-global diagnosis_model
-diagnosis_model = initialize_model()
+def initialize_model():
+    global models
+    paths = ['../models/resNet/model-14-0.99-0.05.h5', '../models/resNet100/model-06-0.97-0.11.h5', '../models/combined_100/model-07-0.98-0.07.h5']
+    for path in paths:
+        model = load_model(path)
+        models.append(model)
+        print('model loaded')    
+    return models
 
 if __name__ == "__main__":
 
     port = 5600
     
+    diagnosis_models = initialize_model()
+
     if os.getenv('PORT') is not None and os.getenv('PORT') != '':
         port = int(os.getenv('PORT'))
 
