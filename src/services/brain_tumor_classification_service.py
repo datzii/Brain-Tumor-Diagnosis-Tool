@@ -66,8 +66,9 @@ def load_image(file_path: str):
     image_size = 150  # Model's expected input size
 
     image = cv2.imread(file_path)  
+    print('cropping')
     image = crop_img(image)
-    #cv2.imwrite('/mnt/c/Users/Usuario/Desktop/MASTER/TFM/cleaned/Testing'+'/'+'prova.jpg', image)
+    cv2.imwrite('/mnt/c/Users/Usuario/Desktop/MASTER/TFM/PACs/PAC3_Oriol_Datzira_Llimargas_TFM/Images_New/Gliomes-20250329T165448Z-001/Gliomes/'+'prova.jpg', image)
     image = cv2.bilateralFilter(image, 2, 50, 50)  
     image = cv2.applyColorMap(image, cv2.COLORMAP_BONE) 
     image = cv2.resize(image, (image_size, image_size))  
