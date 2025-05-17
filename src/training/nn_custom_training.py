@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-"""Custom CNN Model with Colorbone Colormap"""
-
 import os
 import numpy as np
 import tensorflow as tf
@@ -19,19 +16,22 @@ from sklearn.model_selection import train_test_split
 from sklearn.utils import shuffle
 from sklearn.metrics import confusion_matrix, classification_report
 
+from common.config import TRAINING_DIRECTORY, TESTING_DIRECTORY
+
+
 print("Num GPUs Available:", len(tf.config.list_physical_devices('GPU')))
 tf.config.experimental.set_memory_growth(tf.config.list_physical_devices('GPU')[0], True)
 
 # Directories
 labels = ['glioma', 'meningioma', 'notumor', 'pituitary']
-image_size = 150  # Keeping it manageable
+image_size = 150 
 num_classes = len(labels)
 
 # Load and preprocess images
 x_train, y_train, x_test, y_test = [], [], [], []
 
 for label in labels:
-    trainPath = os.path.join('../cleaned/Training', label)
+    trainPath = os.path.join(TRAINING_DIRECTORY, label)
     for file in tqdm(os.listdir(trainPath)):
         image = cv2.imread(os.path.join(trainPath, file), 0)  # Load grayscale
         image = cv2.bilateralFilter(image, 5, 50, 50)
@@ -40,7 +40,7 @@ for label in labels:
         x_train.append(image)
         y_train.append(labels.index(label))
 
-    testPath = os.path.join('../cleaned/Testing', label)
+    testPath = os.path.join(TESTING_DIRECTORY, label)
     for file in tqdm(os.listdir(testPath)):
         image = cv2.imread(os.path.join(testPath, file), 0)
         image = cv2.bilateralFilter(image, 5, 50, 50)

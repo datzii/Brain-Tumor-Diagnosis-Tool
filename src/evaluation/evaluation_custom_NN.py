@@ -7,6 +7,7 @@ import cv2
 from tqdm import tqdm
 import tensorflow as tf
 import os
+from common.config import TESTING_DIRECTORY
 
 # Specify the path to the saved model
 model_path = '../../models/NN_custom/best_custom_model.h5'
@@ -30,7 +31,7 @@ y_test = []   # Testing labels
 # Your image loading and processing code
 for label in labels:
 
-    testPath = os.path.join('../../../cleaned/Testing', label)
+    testPath = os.path.join(TESTING_DIRECTORY, label)
     for file in tqdm(os.listdir(testPath)):
         image = cv2.imread(os.path.join(testPath, file), 0)
         image = cv2.bilateralFilter(image, 2, 50, 50)

@@ -51,7 +51,7 @@ models = []
 
 def initialize_model():
     global models
-    paths = ['../models/resNet/model-14-0.99-0.05.h5', '../models/resNet100/model-06-0.97-0.11.h5', '../models/combined_100/model-07-0.98-0.07.h5']
+    paths = ['../models/resNet/resNet50-09-0.98-0.06.h5', '../models/resNet100/model-06-0.97-0.11.h5', '../models/combined_100/model-11-0.98-0.08.h5']
     for path in paths:
         model = load_model(path)
         models.append(model)

@@ -1,5 +1,6 @@
 /logs/
-/models/
 /logs_custom/
 *venv*
 *__pycache__*
+*.vscode*
+*models*

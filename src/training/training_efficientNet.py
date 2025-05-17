@@ -1,7 +1,7 @@
 from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau, ModelCheckpoint, TensorBoard, LambdaCallback
 from tensorflow.keras.layers import Input, Dropout, Dense, GlobalAveragePooling2D
 from tensorflow.keras.models import Sequential, Model
-from tensorflow.keras.applications import EfficientNetB6
+from tensorflow.keras.applications import EfficientNetB5
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix
@@ -20,6 +20,8 @@ from tqdm import tqdm
 from sklearn.metrics import confusion_matrix, classification_report
 import seaborn as sns
 
+from common.config import TRAINING_DIRECTORY, TESTING_DIRECTORY
+
 # Initialize directories for saving logs
 logdir = os.path.join("logs", datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
 
@@ -35,7 +37,7 @@ y_test = []   # Testing labels
 
 # Your image loading and processing code (as in the original script)
 for label in labels:
-    trainPath = os.path.join('../../../cleaned/Training', label)
+    trainPath = os.path.join(TRAINING_DIRECTORY, label)
     for file in tqdm(os.listdir(trainPath)):
         image = cv2.imread(os.path.join(trainPath, file), 0)  # Load images in gray scale
         image = cv2.bilateralFilter(image, 2, 50, 50)  # Remove image noise
@@ -44,7 +46,7 @@ for label in labels:
         x_train.append(image)
         y_train.append(labels.index(label))
 
-    testPath = os.path.join('../../../cleaned/Testing', label)
+    testPath = os.path.join(TESTING_DIRECTORY, label)
     for file in tqdm(os.listdir(testPath)):
         image = cv2.imread(os.path.join(testPath, file), 0)
         image = cv2.bilateralFilter(image, 2, 50, 50)
@@ -77,7 +79,7 @@ datagen = ImageDataGenerator(
 datagen.fit(x_train)
 
 # Define the ResNet50 model
-net = EfficientNetB6(weights='imagenet', include_top=False, input_shape=(image_size, image_size, 3))
+net = EfficientNetB5(weights='imagenet', include_top=False, input_shape=(image_size, image_size, 3))
 
 model = net.output
 model = GlobalAveragePooling2D()(model)

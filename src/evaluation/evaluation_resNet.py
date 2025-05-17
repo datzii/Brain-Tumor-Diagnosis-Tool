@@ -7,9 +7,10 @@ import cv2
 from tqdm import tqdm
 import tensorflow as tf
 import os
+from common.config import TESTING_DIRECTORY
 
 # Specify the path to the saved model
-model_path = '../../models/resNet/model-14-0.99-0.05.h5'
+model_path = '../models/resNet/resNet50-09-0.98-0.06.h5'
 
 # Load the trained model
 model = load_model(model_path)
@@ -29,7 +30,7 @@ y_test = []   # Testing labels
 
 # Your image loading and processing code
 for label in labels:
-    testPath = os.path.join('../../../cleaned/Testing', label)
+    testPath = os.path.join(TESTING_DIRECTORY, label)
     for file in tqdm(os.listdir(testPath)):
         image = cv2.imread(os.path.join(testPath, file), 0)
         image = cv2.bilateralFilter(image, 2, 50, 50)

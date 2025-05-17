@@ -20,6 +20,8 @@ import cv2
 import io
 from tqdm import tqdm
 
+from common.config import TRAINING_DIRECTORY, TESTING_DIRECTORY
+
 from sklearn.metrics import confusion_matrix, classification_report
 import seaborn as sns
 
@@ -38,7 +40,7 @@ y_test = []   # Testing labels
 
 # Your image loading and processing code (as in the original script)
 for label in labels:
-    trainPath = os.path.join('../../../cleaned/Training', label)
+    trainPath = os.path.join(TRAINING_DIRECTORY, label)
     for file in tqdm(os.listdir(trainPath)):
         image = cv2.imread(os.path.join(trainPath, file), 0)  # Load images in gray scale
         image = cv2.bilateralFilter(image, 2, 50, 50)  # Remove image noise
@@ -47,7 +49,7 @@ for label in labels:
         x_train.append(image)
         y_train.append(labels.index(label))
 
-    testPath = os.path.join('../../../cleaned/Testing', label)
+    testPath = os.path.join(TESTING_DIRECTORY, label)
     for file in tqdm(os.listdir(testPath)):
         image = cv2.imread(os.path.join(testPath, file), 0)
         image = cv2.bilateralFilter(image, 2, 50, 50)
