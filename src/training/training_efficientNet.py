@@ -98,54 +98,8 @@ tensorboard_callback = TensorBoard(log_dir=logdir, histogram_freq=1)
 # Create a writer variable for writing into the log folder (for confusion matrix)
 file_writer_cm = tf.summary.create_file_writer(logdir)
 
-class_names = list(labels)
-# Function to convert confusion matrix figure to image
-def plot_to_image(figure):    
-    buf = io.BytesIO()
-    plt.savefig(buf, format='png')
-    plt.close(figure)
-    buf.seek(0)
-
-    digit = tf.image.decode_png(buf.getvalue(), channels=4)
-    digit = tf.expand_dims(digit, 0)
-
-    return digit
-
-# Function to plot the confusion matrix
-def plot_confusion_matrix(cm, class_names): 
-    figure = plt.figure(figsize=(8, 8)) 
-    plt.imshow(cm, interpolation='nearest', cmap=plt.cm.Accent) 
-    plt.title("Confusion matrix") 
-    plt.colorbar() 
-    tick_marks = np.arange(len(class_names)) 
-    plt.xticks(tick_marks, class_names, rotation=45) 
-    plt.yticks(tick_marks, class_names)
-
-    cm = np.around(cm.astype('float') / cm.sum(axis=1)[:, np.newaxis], decimals=2)  
-    threshold = cm.max() / 2. 
-
-    for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):   
-        color = "white" if cm[i, j] > threshold else "black"   
-        plt.text(j, i, cm[i, j], horizontalalignment="center", color=color)  
-    
-    plt.tight_layout() 
-    plt.ylabel('True label') 
-    plt.xlabel('Predicted label') 
-
-    return figure
-
-# Following function will make predictions from the model and log the confusion matrix as an image
-def log_confusion_matrix(epoch, logs):
-    predictions = np.argmax(model.predict(x_test), axis=1)
-    cm = confusion_matrix(np.argmax(y_test, axis=1), predictions)
-    figure = plot_confusion_matrix(cm, class_names=class_names)
-    cm_image = plot_to_image(figure)
-    
-    with file_writer_cm.as_default():
-        tf.summary.image("Confusion Matrix", cm_image, step=epoch)
 
 # Callbacks setup
-BATCH_SIZE = 64
 EPOCHS = 50
 
 Checkpoint = ModelCheckpoint(filepath='model-{epoch:02d}-{val_accuracy:.2f}-{val_loss:.2f}.h5', 
@@ -155,7 +109,7 @@ ES = EarlyStopping(monitor='val_loss', min_delta=0.001, patience=5, mode='min', 
 
 RL = ReduceLROnPlateau(monitor='val_loss', factor=0.3, patience=5, verbose=1, mode='min')
 
-callbacks = [ES, RL, tensorboard_callback, Checkpoint, LambdaCallback(on_epoch_end=log_confusion_matrix)]
+callbacks = [ES, RL, tensorboard_callback, Checkpoint]
 
 # Train the model and save logs for TensorBoard
 history = model.fit(datagen.flow(x_train, y_train, batch_size=20), 

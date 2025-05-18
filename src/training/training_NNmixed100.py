@@ -112,7 +112,7 @@ resnet = ResNet101(weights='imagenet', include_top=False, input_shape=(150, 150,
 #resnet.trainable = False  # Freeze ResNet50 layers
 
 # === Keep the spatial dimensions for Residual Blocks ===
-x = resnet.output  # (Batch, 5, 5, 2048) from ResNet50
+x = resnet.output 
 
 # === Add Custom Residual + SE Blocks ===
 x = residual_block(x, 128, downsample=True)
@@ -147,7 +147,6 @@ model.summary()
 class_names = list(labels)
 
 # Callbacks setup
-BATCH_SIZE = 64
 EPOCHS = 50
 
 Checkpoint = ModelCheckpoint(filepath='model-{epoch:02d}-{val_accuracy:.2f}-{val_loss:.2f}.h5', 

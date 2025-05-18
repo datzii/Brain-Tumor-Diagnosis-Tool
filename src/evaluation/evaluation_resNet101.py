@@ -11,18 +11,17 @@ import cv2
 from tqdm import tqdm
 import tensorflow as tf
 import os
-
 from common.config import TESTING_DIRECTORY
 
 # Load model
-model_path = '../models/combined_100/model-11-0.98-0.08.h5'
+model_path = '../models/resNet101/model-06-0.97-0.11.h5'
 model = load_model(model_path)
 
-# Labels and settings
+# Define labels and image size
 labels = ['glioma', 'meningioma', 'notumor', 'pituitary']
 image_size = 150
 
-# Load and preprocess test data
+# Load and preprocess images
 x_test = []
 y_test = []
 
@@ -44,16 +43,14 @@ y_test_onehot = tf.keras.utils.to_categorical(y_test, num_classes=len(labels))
 y_pred_prob = model.predict(x_test)
 y_pred = np.argmax(y_pred_prob, axis=1)
 
-# Metrics
+# Evaluation metrics
 accuracy = accuracy_score(y_test, y_pred)
 precision = precision_score(y_test, y_pred, average='macro')
 recall = recall_score(y_test, y_pred, average='macro')
 f1 = f1_score(y_test, y_pred, average='macro')
-
-# Confusion Matrix
 conf_matrix = confusion_matrix(y_test, y_pred)
 
-# Specificity (per class)
+# Specificity per class
 specificities = []
 for i in range(len(conf_matrix)):
     TP = conf_matrix[i, i]
@@ -62,21 +59,21 @@ for i in range(len(conf_matrix)):
     TN = np.sum(conf_matrix) - (TP + FN + FP)
     spec = TN / (TN + FP) if (TN + FP) > 0 else 0
     specificities.append(spec)
-specificity_mean = np.mean(specificities)
+specificity = np.mean(specificities)
 
-# AUC-ROC
+# AUC-ROC (multiclass)
 try:
     y_test_bin = label_binarize(y_test, classes=list(range(len(labels))))
     auc_roc = roc_auc_score(y_test_bin, y_pred_prob, average='macro', multi_class='ovr')
 except Exception as e:
     auc_roc = f"N/A (AUC failed: {e})"
 
-# Output metrics
+# Print metrics
 print("\n🔹 Evaluation Metrics:")
 print(f"Accuracy:     {accuracy:.2%}")
 print(f"Precision:    {precision:.2%}")
 print(f"Recall:       {recall:.2%} (Sensitivity)")
-print(f"Specificity:  {specificity_mean:.2%}")
+print(f"Specificity:  {specificity:.2%}")
 print(f"F1 Score:     {f1:.2%}")
 print(f"AUC-ROC:      {auc_roc}")
 
@@ -93,3 +90,4 @@ plt.ylabel('True Label')
 plt.savefig('confusion_matrix.png')
 plt.close()
 print('Confusion matrix saved as confusion_matrix.png')
+

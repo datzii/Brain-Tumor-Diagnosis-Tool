@@ -1,5 +1,9 @@
 from tensorflow.keras.models import load_model
-from sklearn.metrics import confusion_matrix, classification_report, accuracy_score
+from sklearn.metrics import (
+    confusion_matrix, classification_report, accuracy_score,
+    precision_score, recall_score, f1_score, roc_auc_score
+)
+from sklearn.preprocessing import label_binarize
 import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
@@ -9,26 +13,18 @@ import tensorflow as tf
 import os
 from common.config import TESTING_DIRECTORY
 
-# Specify the path to the saved model
+# Load model
 model_path = '../models/efficientNet/model-07-0.93-0.23.h5'
-
-# Load the trained model
 model = load_model(model_path)
 
-# Print model summary to check if it's loaded properly
-#model.summary()
-
-# Load the labels and initialize other variables
+# Define labels and image size
 labels = ['glioma', 'meningioma', 'notumor', 'pituitary']
 image_size = 150
 
-# Initialize lists for images and labels
-x_train = []  # Training images
-y_train = []  # Training labels
-x_test = []   # Testing images
-y_test = []   # Testing labels
+# Load and preprocess images
+x_test = []
+y_test = []
 
-# Your image loading and processing code
 for label in labels:
     testPath = os.path.join(TESTING_DIRECTORY, label)
     for file in tqdm(os.listdir(testPath)):
@@ -39,33 +35,59 @@ for label in labels:
         x_test.append(image)
         y_test.append(labels.index(label))
 
-# Normalize image data
 x_test = np.array(x_test) / 255.0
+y_test = np.array(y_test)
+y_test_onehot = tf.keras.utils.to_categorical(y_test, num_classes=len(labels))
 
-# If y_test is not one-hot encoded, convert it to one-hot encoding
-y_test = tf.keras.utils.to_categorical(y_test, num_classes=4)
+# Predict
+y_pred_prob = model.predict(x_test)
+y_pred = np.argmax(y_pred_prob, axis=1)
 
-# Predictions and evaluation
-predicted_classes = np.argmax(model.predict(x_test), axis=1)  # Get predicted classes
-accuracy = accuracy_score(np.argmax(y_test, axis=1), predicted_classes)
-print(f"Model Accuracy: {accuracy:.2%}")
-confusionmatrix = confusion_matrix(np.argmax(y_test, axis=1), predicted_classes)  # Compare to true labels
+# Metrics
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred, average='macro')
+recall = recall_score(y_test, y_pred, average='macro')
+f1 = f1_score(y_test, y_pred, average='macro')
+conf_matrix = confusion_matrix(y_test, y_pred)
 
-# Save confusion matrix image
+# Specificity
+specificities = []
+for i in range(len(conf_matrix)):
+    TP = conf_matrix[i, i]
+    FN = np.sum(conf_matrix[i, :]) - TP
+    FP = np.sum(conf_matrix[:, i]) - TP
+    TN = np.sum(conf_matrix) - (TP + FN + FP)
+    spec = TN / (TN + FP) if (TN + FP) > 0 else 0
+    specificities.append(spec)
+specificity = np.mean(specificities)
+
+# AUC-ROC (multiclass)
+try:
+    y_test_bin = label_binarize(y_test, classes=list(range(len(labels))))
+    auc_roc = roc_auc_score(y_test_bin, y_pred_prob, average='macro', multi_class='ovr')
+except Exception as e:
+    auc_roc = f"N/A (AUC failed: {e})"
+
+# Print all metrics
+print("\n🔹 Evaluation Metrics:")
+print(f"Accuracy:     {accuracy:.2%}")
+print(f"Precision:    {precision:.2%}")
+print(f"Recall:       {recall:.2%} (Sensitivity)")
+print(f"Specificity:  {specificity:.2%}")
+print(f"F1 Score:     {f1:.2%}")
+print(f"AUC-ROC:      {auc_roc}")
+
+# Classification report
+print("\nClassification Report:")
+print(classification_report(y_test, y_pred, target_names=labels))
+
+# Confusion matrix plot
 plt.figure(figsize=(10, 8))
-sns.heatmap(confusionmatrix, cmap='Blues', annot=True, cbar=True, xticklabels=labels, yticklabels=labels)
+sns.heatmap(conf_matrix, cmap='Blues', annot=True, cbar=True, xticklabels=labels, yticklabels=labels)
 plt.title('Confusion Matrix')
 plt.xlabel('Predicted Label')
 plt.ylabel('True Label')
-
-# Save to file (e.g., as a PNG image)
-confusion_matrix_file = 'confusion_matrix.png'
-plt.savefig(confusion_matrix_file)
+plt.savefig('confusion_matrix.png')
 plt.close()
+print('Confusion matrix saved as confusion_matrix.png')
 
-print(f'Confusion matrix saved as {confusion_matrix_file}')
-
-# Print classification report
-print(classification_report(np.argmax(y_test, axis=1), predicted_classes))
-
-loss,acc = model.evaluate(x_test,y_test)

@@ -123,7 +123,7 @@ def custom_cnn(input_shape=(150, 150, 3), num_classes=4):
 model = custom_cnn()
 
 # Compile model
-model.compile(optimizer=Adam(learning_rate=0.0005),
+model.compile(optimizer=Adam(learning_rate=0.0001),
               loss="categorical_crossentropy",
               metrics=["accuracy"])
 
@@ -138,10 +138,12 @@ callbacks = [
     TensorBoard(log_dir=logdir, histogram_freq=1)
 ]
 
+EPOCHS = 50
+
 # Train model
 history = model.fit(datagen.flow(x_train, y_train, batch_size=20),
                     validation_data=(x_val, y_val),
-                    epochs=40,
+                    epochs=EPOCHS,
                     callbacks=callbacks)
 
 # Evaluate model

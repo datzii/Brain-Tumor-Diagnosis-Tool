@@ -101,7 +101,6 @@ file_writer_cm = tf.summary.create_file_writer(logdir)
 class_names = list(labels)
 
 # Callbacks setup
-BATCH_SIZE = 64
 EPOCHS = 50
 
 Checkpoint = ModelCheckpoint(filepath='resNet50-{epoch:02d}-{val_accuracy:.2f}-{val_loss:.2f}.h5', 

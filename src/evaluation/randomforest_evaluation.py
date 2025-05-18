@@ -16,7 +16,7 @@ from common.config import TESTING_DIRECTORY
 
 # Load the saved model
 
-model = load("best_rf_cpu_model.joblib")  # Replace with your file name
+model = load("../models/Random_Forest/rf_model.joblib")  # Replace with your file name
 
 
 # Load the labels and initialize variables
@@ -77,7 +77,7 @@ specificity = np.mean(specificities)
 # AUC-ROC (for multiclass, using One-vs-Rest strategy)
 try:
     y_test_bin = label_binarize(y_test, classes=[0, 1, 2, 3])
-    y_pred_scores = model.decision_function(x_test)
+    y_pred_scores = model.predict_proba(x_test)
     auc_roc = roc_auc_score(y_test_bin, y_pred_scores, average='macro', multi_class='ovr')
 except:
     auc_roc = "N/A (model must support decision_function or predict_proba)"
