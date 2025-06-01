@@ -8,7 +8,7 @@ import seaborn as sns
 from sklearn.model_selection import GridSearchCV
 from tqdm import tqdm
 from joblib import dump
-import pandas as pd  # for showing the table of results
+import pandas as pd 
 from common.config import TRAINING_DIRECTORY, TESTING_DIRECTORY
 
 # Load the labels and initialize variables

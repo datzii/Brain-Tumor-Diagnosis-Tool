@@ -28,17 +28,17 @@ import seaborn as sns
 # Initialize directories for saving logs
 logdir = os.path.join("logs", datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
 
-# Load the labels and initialize other variables (similar to your original code)
+# Training variables definition
 labels = ['glioma', 'meningioma', 'notumor', 'pituitary']
 image_size = 150
 
 # Initialize lists for images and labels
-x_train = []  # Training images
-y_train = []  # Training labels
-x_test = []   # Testing images
-y_test = []   # Testing labels
+x_train = []  
+y_train = []  
+x_test = []   
+y_test = []   
 
-# Your image loading and processing code (as in the original script)
+# Load and preprocess images
 for label in labels:
     trainPath = os.path.join(TRAINING_DIRECTORY, label)
     for file in tqdm(os.listdir(trainPath)):
@@ -81,7 +81,7 @@ datagen = ImageDataGenerator(
 )
 datagen.fit(x_train)
 
-# === Squeeze-and-Excitation Block ===
+# Squeeze-and-Excitation Block
 def squeeze_excite_block(input_tensor, ratio=16):
     """ Squeeze-and-Excitation Block """
     filters = input_tensor.shape[-1]
@@ -91,7 +91,7 @@ def squeeze_excite_block(input_tensor, ratio=16):
     se = Reshape((1, 1, filters))(se)
     return Multiply()([input_tensor, se])
 
-# === Residual Block ===
+# Residual Block
 def residual_block(x, filters, downsample=False):
     """ Residual Block with optional downsampling """
     shortcut = x
@@ -107,14 +107,13 @@ def residual_block(x, filters, downsample=False):
     x = squeeze_excite_block(x)  # SE Block
     return x
 
-# === Load Pretrained ResNet50 ===
+# Load Pretrained ResNet50
 resnet = ResNet101(weights='imagenet', include_top=False, input_shape=(150, 150, 3))
-#resnet.trainable = False  # Freeze ResNet50 layers
 
-# === Keep the spatial dimensions for Residual Blocks ===
+# Keep the spatial dimensions for Residual Blocks
 x = resnet.output 
 
-# === Add Custom Residual + SE Blocks ===
+# Add Custom Residual + SE Blocks
 x = residual_block(x, 128, downsample=True)
 x = Dropout(0.3)(x)
 x = residual_block(x, 256, downsample=True)
@@ -122,26 +121,26 @@ x = Dropout(0.4)(x)
 x = residual_block(x, 512, downsample=True)
 x = Dropout(0.5)(x)
 
-# === Now Apply Global Pooling ===
+# Now Apply Global Pooling
 x = GlobalAveragePooling2D()(x)
 
-# === Fully Connected Layers ===
+# Fully Connected Layers
 x = Dense(1024, activation='relu')(x)
 x = Dropout(0.5)(x)
 x = Dense(512, activation='relu')(x)
 x = Dropout(0.5)(x)
 
-# === Output Layer ===
+# Output Layer
 outputs = Dense(4, activation='softmax')(x)
 
-# === Define Final Model ===
+# Define Final Model
 model = Model(inputs=resnet.input, outputs=outputs)
 
-# === Compile Model ===
+# Compile Model
 adam = tf.keras.optimizers.Adam(learning_rate=0.0001)
 model.compile(optimizer=adam, loss='categorical_crossentropy', metrics=['accuracy'])
 
-# === Model Summary ===
+# Model Summary
 model.summary()
 
 class_names = list(labels)

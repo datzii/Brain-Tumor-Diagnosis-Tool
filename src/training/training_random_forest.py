@@ -18,7 +18,7 @@ image_size = 150
 # Lists to store images and labels
 x_train, y_train, x_test, y_test = [], [], [], []
 
-# Load data
+# Load and preprocess data
 for label in labels:
     trainPath = os.path.join(TRAINING_DIRECTORY, label)
     for file in tqdm(os.listdir(trainPath)):

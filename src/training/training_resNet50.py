@@ -25,17 +25,17 @@ from common.config import TRAINING_DIRECTORY, TESTING_DIRECTORY
 # Initialize directories for saving logs
 logdir = os.path.join("logs", datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
 
-# Load the labels and initialize other variables (similar to your original code)
+# Load the labels and image size
 labels = ['glioma', 'meningioma', 'notumor', 'pituitary']
 image_size = 150
 
 # Initialize lists for images and labels
-x_train = []  # Training images
-y_train = []  # Training labels
-x_test = []   # Testing images
-y_test = []   # Testing labels
+x_train = []  
+y_train = []  
+x_test = []   
+y_test = []   
 
-# Your image loading and processing code (as in the original script)
+# Load and preprocess images
 for label in labels:
     trainPath = os.path.join(TRAINING_DIRECTORY, label)
     for file in tqdm(os.listdir(trainPath)):
@@ -92,9 +92,6 @@ adam = keras.optimizers.Adam(learning_rate=0.0001)
 model.compile(optimizer=adam, loss='categorical_crossentropy', metrics=['accuracy'])
 model.summary()
 
-# Define TensorBoard callback
-tensorboard_callback = TensorBoard(log_dir=logdir, histogram_freq=1)
-
 # Create a writer variable for writing into the log folder (for confusion matrix)
 file_writer_cm = tf.summary.create_file_writer(logdir)
 
@@ -110,7 +107,7 @@ ES = EarlyStopping(monitor='val_loss', min_delta=0.001, patience=5, mode='min', 
 
 RL = ReduceLROnPlateau(monitor='val_loss', factor=0.3, patience=5, verbose=1, mode='min')
 
-callbacks = [ES, RL, tensorboard_callback, Checkpoint]
+callbacks = [ES, RL, Checkpoint]
 
 # Train the model and save logs for TensorBoard
 history = model.fit(datagen.flow(x_train, y_train, batch_size=20), 
@@ -129,8 +126,6 @@ sns.heatmap(confusionmatrix, cmap='Blues', annot=True, cbar=True, xticklabels=la
 plt.title('Confusion Matrix')
 plt.xlabel('Predicted Label')
 plt.ylabel('True Label')
-
-# Save to file (e.g., as a PNG image)
 confusion_matrix_file = 'confusion_matrix.png'
 plt.savefig(confusion_matrix_file)
 plt.close()

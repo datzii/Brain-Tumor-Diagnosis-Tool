@@ -22,7 +22,7 @@ from common.config import TRAINING_DIRECTORY, TESTING_DIRECTORY
 print("Num GPUs Available:", len(tf.config.list_physical_devices('GPU')))
 tf.config.experimental.set_memory_growth(tf.config.list_physical_devices('GPU')[0], True)
 
-# Directories
+# Training variables definition
 labels = ['glioma', 'meningioma', 'notumor', 'pituitary']
 image_size = 150 
 num_classes = len(labels)
@@ -66,7 +66,7 @@ x_train, x_val, y_train, y_val = train_test_split(x_train, y_train, test_size=0.
 datagen = ImageDataGenerator(rotation_range=15, width_shift_range=0.1, height_shift_range=0.1, horizontal_flip=True)
 datagen.fit(x_train)
 
-# === Custom CNN with Residual Connections ===
+# Custom CNN with Residual Connections
 def squeeze_excite_block(input_tensor, ratio=16):
     """ Squeeze-and-Excitation Block """
     filters = input_tensor.shape[-1]
@@ -84,7 +84,7 @@ def residual_block(x, filters, downsample=False):
 
     x = Conv2D(filters, (3, 3), activation='relu', padding='same', strides=(2 if downsample else 1))(x)
     x = BatchNormalization()(x)
-    x = Conv2D(filters, (3, 3), activation=None, padding='same')(x)  # No activation yet
+    x = Conv2D(filters, (3, 3), activation=None, padding='same')(x) 
     x = BatchNormalization()(x)
     x = Add()([x, shortcut])  # Residual Connection
     x = tf.keras.activations.relu(x)  # Apply activation after addition
@@ -134,8 +134,7 @@ logdir = os.path.join("logs_custom", datetime.datetime.now().strftime("%Y%m%d-%H
 callbacks = [
     ModelCheckpoint(filepath="best_custom_model.h5", monitor="val_loss", save_best_only=True, mode="min", verbose=1),
     EarlyStopping(monitor="val_loss", patience=5, restore_best_weights=True, verbose=1),
-    ReduceLROnPlateau(monitor="val_loss", factor=0.3, patience=3, verbose=1, mode="min"),
-    TensorBoard(log_dir=logdir, histogram_freq=1)
+    ReduceLROnPlateau(monitor="val_loss", factor=0.3, patience=3, verbose=1, mode="min")
 ]
 
 EPOCHS = 50
