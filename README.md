@@ -11,16 +11,31 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 2. Modify configuration variables
+### 2. Crop and save images
+
+```bash
+cd src/services
+```
+Edit the `Preprocessing.py` file with the appropriate values in the `main` section:
+- `from_path`: The path where the original dataset is
+- `to_path`: The path where the cropped images want to be saved
+
+Start the preprocessing:
+```bash
+cd python Preprocessing.py
+```
+
+
+### 3. Modify configuration variables
 ```bash
 cd src/common
 ```
 
 Edit the `config.py` file with the appropriate values:
-- `TRAINING_DIRECTORY`: The directory where the training images of the dataset are
-- `TESTING_DIRECTORY`: The directory where the testing images of the dataset are
+- `TRAINING_DIRECTORY`: The directory where the cropped training images of the dataset are
+- `TESTING_DIRECTORY`: The directory where the cropped testing images of the dataset are
 
-### 3. Train the deep and machine learning models
+### 4. Train the deep and machine learning models
 
 To train the different models with the MRI images training dataset, the scripts are found at `src/training`.
 

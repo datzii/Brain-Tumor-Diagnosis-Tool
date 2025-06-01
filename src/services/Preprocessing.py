@@ -64,3 +64,9 @@ def save_cropped_images(from_path: str, to_path: str):
 			if not os.path.exists(save_path):
 				os.makedirs(save_path)
 			cv2.imwrite(save_path+'/'+img, new_img)
+
+
+if __name__ == "__main__":
+    from_path = "path/to/source/directory"
+    to_path = "path/to/destination/directory"
+    save_cropped_images(from_path, to_path)
