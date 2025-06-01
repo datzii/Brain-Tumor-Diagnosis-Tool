@@ -1,51 +1,64 @@
-# Brain Tumor MRI Classification Using Pre-trained Models
+# Brain Tumor Diagnosis Tool
+Brain Tumor Diagnosis Tool based on trained Deep and Machine Learning models over a dataset of MRI images.
 
-## What is a brain tumor?
+## 🚀 Getting Started
 
-A brain tumor is a collection, or mass, of abnormal cells in your brain. Your skull, which encloses your brain, is very rigid. Any growth inside such a restricted space can cause problems. Brain tumors can be cancerous (malignant) or noncancerous (benign). When benign or malignant tumors grow, they can cause the pressure inside your skull to increase. This can cause brain damage, and it can be life-threatening.
+### 1. Create a Virtual Environment and Install Dependencies
 
-## The importance of the subject
+```bash
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
 
-Early detection and classification of brain tumors is an important research domain in the field of medical imaging and accordingly helps in selecting the most convenient treatment method to save patients life therefore.
+### 2. Modify configuration variables
+```bash
+cd src/common
+```
 
-## Basic Requirements
+Edit the `config.py` file with the appropriate values:
+- `TRAINING_DIRECTORY`: The directory where the training images of the dataset are
+- `TESTING_DIRECTORY`: The directory where the testing images of the dataset are
 
-| **Package Name**      | **Version** |
-| --------------------- | ----------- |
-| `python`              | 3.7.12      |
-| `tensorflow`          | 2.6.0       |
-| `keras`               | 2.6.0       |
-| `keras-preprocessing` | 1.1.2       |
-| `matplotlib`          | 3.0.2       |
-| `opencv`              | 4.1.2       |
-| `scikit-learn`        | 0.22.2      |
+### 3. Train the deep and machine learning models
 
-## Dataset
+To train the different models with the MRI images training dataset, the scripts are found at `src/training`.
 
-The dataset was taken from [here](https://www.kaggle.com/masoudnickparvar/brain-tumor-mri-dataset).
+To train the model defined in the file `model_to_train.py` in the folder `src/training`, for example:
 
-### Dataset Details
+```bash
+cd src
+python -m training.model_to_train
+```
 
-This dataset contains **7022** images of human brain MRI images which are classified into 4 classes:
+The output will be the trained model saved and the confusion matrix of the evaluation of the model.
 
-- glioma
-- meningioma
-- no tumor
-- pituitary
+### 5. Evaluate a deep and machine learning model
 
-About 22% of the images are intended for model testing and the rest for model training.
-Pay attention that The size of the images in this dataset is different. You can resize images to the desired size after pre-processing and removing the extra margins.
+To evaluate the different models with the MRI images testing dataset, the scripts are found at `src/evaluation`.
 
-### Data Pre-processing
+To evaluate the model defined in the file `model_to_evaluate.py` in the folder `src/evaluation`, for example:
 
-Crop the part of the image that contains only the brain (which is the most important part of the image): The cropping technique is used to find the extreme top, bottom, left and right points of the brain using OpenCV. You can do this with [Preprocessing.py](https://github.com/masoudnick/Brain-Tumor-MRI-Classification/blob/main/Preprocessing.py)
+Edit the `model_to_evaluate.py` file with the appropriate values:
+- `model_path`: The path were the saved model during training is located
 
-![preprocessing result](https://github.com/masoudnick/Brain-Tumor-MRI-Classification/blob/main/preprocess.jpg)
+```bash
+cd src
+python -m evaluation.model_to_evaluate
+```
 
-## Pre-trained Model
+The output will be the metrics report and the confusion matrix of the model.
 
-A pre-trained model is a model that was trained on a large benchmark dataset to solve a problem similar to the one that we want to solve. Accordingly, due to the computational cost of training such models, it is common practice to import and use models from published literature (e.g. VGG, Inception, ResNet50). For this project, I decided to use **ResNet50** model to perform image classification for brain tumor MRI images.[Resnet50 Article](https://arxiv.org/abs/1512.03385)
 
-## Note
-You can see more details about training steps and testing results inside [Brain_Tumor_Classification.ipynb](https://github.com/masoudnick/Brain-Tumor-MRI-Classification/blob/main/Brain_Tumor_Classification.ipynb)
+### 6. Start the Brain Tumor Diagnosis Tool micro-service
+
+```bash
+cd src
+```
+Edit the `main.py` file with the appropriate values:
+- `paths`: The paths of the saved models that will be used in the classification of the Brain Tumor Diagnosis Tool
+
+```bash
+python main.py
+```
 
